@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #f8f4e3;
+  --color-paper: #fdfaf0;
+  --color-ink: #1d1a05;
+  --color-plum: #70163c;
+  --color-basil: #307351;
+  --color-orchid: #d9b6e1;
+  --color-crust: #ead9af;
+  --color-crust-deep: #d9be8c;
+  --color-sauce: #b2402c;
+}
+
+@theme inline {
+  --font-display: var(--font-fraunces), "Georgia", serif;
+  --font-sans: var(--font-grotesk), "Helvetica Neue", sans-serif;
+  --font-script: var(--font-caveat), cursive;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-fraunces), "Georgia", serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-plum);
+  color: var(--color-cream);
+}
+
+/* Thin editorial rule */
+.hairline {
+  height: 1px;
+  background: color-mix(in srgb, var(--color-ink) 18%, transparent);
+}
+
+/* Dotted separator, like the printed menu */
+.dotted-rule {
+  height: 3px;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-ink) 32%, transparent) 1.2px,
+    transparent 1.3px
+  );
+  background-size: 10px 3px;
+  background-repeat: repeat-x;
+  background-position: left center;
+}
+
+/* Dot leaders between item name and price */
+.dot-leader {
+  flex: 1 1 auto;
+  min-width: 2rem;
+  margin: 0 0.6em;
+  border-bottom: 2px dotted color-mix(in srgb, var(--color-ink) 28%, transparent);
+  transform: translateY(-0.3em);
+}
+
+/* Outlined display text, echoing the logo's inline letterforms */
+.text-outline-plum {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--color-plum);
+}
+.text-outline-cream {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--color-cream);
+}
+
+/* Marquee band */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 36s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* Nav link underline sweep */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Sections offset below the fixed navbar when anchored */
+section[id] {
+  scroll-margin-top: 4.5rem;
+}
+
+/* Hide scrollbars on horizontal pill rows (still scrollable) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
