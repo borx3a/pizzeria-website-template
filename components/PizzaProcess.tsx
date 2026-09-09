@@ -20,31 +20,52 @@ const steps = [
   { number: "05", title: "Table", caption: "Made to be shared" },
 ];
 
+/** 0 → 1 ramp across [from, to], clamped at both ends. */
+function ramp(v: number, from: number, to: number) {
+  return Math.min(1, Math.max(0, (v - from) / (to - from)));
+}
+
 /** Flat brand-styled pizza illustration, built up layer by layer on scroll. */
 function StageCanvas({
   progress,
 }: {
   progress: ReturnType<typeof useScroll>["scrollYProgress"];
 }) {
-  const doughScale = useTransform(progress, [0, 0.1], [0.55, 1]);
-  const doughRotate = useTransform(progress, [0, 1], [0, 100]);
-  const sauceScale = useTransform(progress, [0.2, 0.34], [0, 1]);
+  /*
+   * Every value below is computed in JS — the function form of `useTransform`.
+   * The array form lets Framer hand accelerable properties like `opacity` to a
+   * native scroll timeline while transforms keep running on the main thread;
+   * the two ranges disagree, which left the photograph stuck part-faded at the
+   * end of the pin with the drawing still at full strength underneath.
+   */
+  const doughScale = useTransform(() => 0.55 + 0.45 * ramp(progress.get(), 0, 0.1));
+  const doughRotate = useTransform(() => 100 * ramp(progress.get(), 0, 1));
+  const sauceScale = useTransform(() => ramp(progress.get(), 0.2, 0.34));
 
   // toppings pop in one after another during stage 03
-  const t1 = useTransform(progress, [0.4, 0.46], [0, 1]);
-  const t2 = useTransform(progress, [0.45, 0.51], [0, 1]);
-  const t3 = useTransform(progress, [0.5, 0.56], [0, 1]);
+  const t1 = useTransform(() => ramp(progress.get(), 0.4, 0.46));
+  const t2 = useTransform(() => ramp(progress.get(), 0.45, 0.51));
+  const t3 = useTransform(() => ramp(progress.get(), 0.5, 0.56));
 
   // oven: warm glow and char during stage 04
-  const glow = useTransform(progress, [0.6, 0.68, 0.78, 0.84], [0, 1, 1, 0]);
-  const char = useTransform(progress, [0.62, 0.78], [0, 0.45]);
+  const glow = useTransform(() => {
+    const p = progress.get();
+    return Math.min(ramp(p, 0.6, 0.68), 1 - ramp(p, 0.78, 0.84));
+  });
+  const char = useTransform(() => 0.45 * ramp(progress.get(), 0.62, 0.78));
 
-  // final reveal: the real photograph takes over
-  const photoOpacity = useTransform(progress, [0.8, 0.9], [0, 1]);
-  const photoScale = useTransform(progress, [0.8, 0.94], [0.88, 1]);
+  /*
+   * Final reveal: the drawing dissolves into the photograph. Both sides of the
+   * crossfade share one ramp so the drawing is fully gone the moment the photo
+   * is fully there, and it finishes at 0.9 — the remaining tenth of the pin
+   * holds the finished pizza before the section releases.
+   */
+  const photoOpacity = useTransform(() => ramp(progress.get(), 0.78, 0.9));
+  const drawingOpacity = useTransform(() => 1 - ramp(progress.get(), 0.78, 0.9));
+  const photoScale = useTransform(() => 0.9 + 0.1 * ramp(progress.get(), 0.78, 0.94));
 
   return (
-    <div className="relative aspect-square w-[280px] sm:w-[340px] lg:w-[430px]">
+    <div className="relative aspect-square w-[280px] sm:w-[340px] lg:w-[min(480px,50svh)]">
       {/* oven glow behind the pizza */}
       <motion.div
         aria-hidden="true"
@@ -54,12 +75,12 @@ function StageCanvas({
 
       <motion.svg
         viewBox="0 0 200 200"
-        style={{ rotate: doughRotate }}
+        style={{ rotate: doughRotate, opacity: drawingOpacity }}
         className="relative h-full w-full"
         aria-hidden="true"
       >
         {/* dough */}
-        <motion.g style={{ scale: doughScale }} transform-origin="100 100">
+        <motion.g style={{ scale: doughScale, transformOrigin: "center" }}>
           <circle cx="100" cy="100" r="92" fill="var(--color-crust)" />
           <circle cx="100" cy="100" r="78" fill="#f3e7c8" />
           {/* char spots, darken in the oven */}
@@ -77,7 +98,7 @@ function StageCanvas({
         </motion.g>
 
         {/* sauce */}
-        <motion.g style={{ scale: sauceScale }} transform-origin="100 100">
+        <motion.g style={{ scale: sauceScale, transformOrigin: "center" }}>
           <path
             d="M100 28c20-3 40 6 52 20 12 15 18 34 12 52-5 18-18 33-35 40-18 8-40 6-54-6-15-12-24-31-22-50 2-18 12-36 27-46 6-4 13-8 20-10z"
             fill="var(--color-sauce)"
@@ -86,12 +107,12 @@ function StageCanvas({
         </motion.g>
 
         {/* toppings */}
-        <motion.g style={{ opacity: t1, scale: t1 }} transform-origin="100 100">
+        <motion.g style={{ opacity: t1, scale: t1, transformOrigin: "center" }}>
           <circle cx="78" cy="70" r="11" fill="#fff8e7" />
           <circle cx="130" cy="120" r="12" fill="#fff8e7" />
           <circle cx="94" cy="146" r="9" fill="#fff8e7" />
         </motion.g>
-        <motion.g style={{ opacity: t2, scale: t2 }} transform-origin="100 100">
+        <motion.g style={{ opacity: t2, scale: t2, transformOrigin: "center" }}>
           <circle cx="124" cy="66" r="10" fill="#fff8e7" />
           <circle cx="62" cy="112" r="10" fill="#fff8e7" />
           {/* mushroom slices */}
@@ -104,7 +125,7 @@ function StageCanvas({
             fill="#a5814e"
           />
         </motion.g>
-        <motion.g style={{ opacity: t3, scale: t3 }} transform-origin="100 100">
+        <motion.g style={{ opacity: t3, scale: t3, transformOrigin: "center" }}>
           {/* basil */}
           <path
             d="M92 58c-8-2-12-6-13-14 8 2 12 6 13 14z"
@@ -121,16 +142,19 @@ function StageCanvas({
         </motion.g>
       </motion.svg>
 
-      {/* the real thing */}
+      {/* The real thing, sized to land exactly on the drawn dough: the SVG
+          crust has r=92 in a 200 viewBox, so 92% of the canvas — a 4% inset.
+          `pizza-round.jpg` is cropped so the pizza fills that circle edge to
+          edge; swapping in a looser crop will show background in the corners. */}
       <motion.div
         style={{ opacity: photoOpacity, scale: photoScale }}
-        className="absolute inset-0 overflow-hidden rounded-full shadow-2xl shadow-ink/30"
+        className="absolute inset-[4%] overflow-hidden rounded-full shadow-2xl shadow-ink/30"
       >
         <Image
-          src="/images/pizza-margherita.jpg"
+          src="/images/pizza-round.jpg"
           alt="The finished pizza, fresh out of the wood-fired oven"
           fill
-          sizes="(min-width: 1024px) 430px, 340px"
+          sizes="(min-width: 1024px) 480px, 340px"
           className="object-cover"
         />
       </motion.div>
@@ -196,9 +220,9 @@ export default function PizzaProcess() {
             </h2>
           </Reveal>
 
-          <div className="mt-8 flex flex-1 flex-col items-center justify-center gap-10 lg:mt-0 lg:flex-row lg:justify-between lg:gap-16">
+          <div className="mt-8 flex flex-1 flex-col items-center justify-center gap-10 lg:mt-0 lg:flex-row lg:gap-16">
             {/* step list — desktop */}
-            <ol className="hidden w-full max-w-sm space-y-6 lg:block">
+            <ol className="hidden w-full max-w-sm shrink-0 space-y-6 lg:block">
               {steps.map((step, i) => (
                 <li
                   key={step.number}
@@ -224,7 +248,9 @@ export default function PizzaProcess() {
               ))}
             </ol>
 
-            <StageCanvas progress={scrollYProgress} />
+            <div className="flex w-full items-center justify-center lg:flex-1">
+              <StageCanvas progress={scrollYProgress} />
+            </div>
 
             {/* current step — mobile */}
             <div className="text-center lg:hidden">

@@ -60,13 +60,19 @@ notes are deliberately generic and are meant to be rewritten.
 
 | File | Size | Used by |
 | --- | --- | --- |
-| `pizza-margherita.jpg` | 1600 × 1600 | Hero, showcase, process, gallery, social |
+| `pizza-margherita.jpg` | 1600 × 1600 | Hero, showcase, menu hover, gallery, social |
 | `bruschetta.jpg` | 1600 × 1600 | Story, menu hover, gallery, social |
 | `table-setting.jpg` | 1600 × 1600 | Gallery, social |
+| `pizza-round.jpg` | 1200 × 1200 | The final frame of the process animation |
 
 Square originals crop cleanly into every frame on the page. Adding a photo to a
 menu item is just an `image` field in `data/menu.ts`; adding one to the gallery
 wall is one more entry in the `entries` array in `components/Gallery.tsx`.
+
+`pizza-round.jpg` is the one with a constraint: the process animation dissolves
+a drawn pizza into it inside a circular mask, so the pizza has to be centred and
+fill the frame edge to edge. A looser crop will show table and background in the
+circle. It is a tighter crop of the same photograph as `pizza-margherita.jpg`.
 
 ### The wordmark
 
