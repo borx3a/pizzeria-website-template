@@ -3,6 +3,8 @@
 A one-page restaurant website template for a wood-fired pizzeria, built with
 Next.js 15, React 19, Tailwind CSS v4 and Framer Motion.
 
+**Live demo → [pizzeria-website-template.vercel.app](https://pizzeria-website-template.vercel.app)**
+
 Everything on the page is placeholder content. The brand is called `PIZZERIA`,
 the contact details say "coming soon", and the photography is stock — swap all
 of it for your own.
@@ -33,6 +35,12 @@ npm run dev
 ```
 
 Open http://localhost:3000.
+
+### Deploying
+
+The demo runs on [Vercel](https://vercel.com). Import the repository, accept the
+detected Next.js preset, and deploy — there is nothing to configure and no
+environment variables to set.
 
 ## Making it yours
 
